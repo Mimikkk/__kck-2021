@@ -15,7 +15,6 @@ HsvColor = Color
 
 # region [Matplotlib Customization]
 rc('legend', fontsize=10)
-# matplotlib.use('Agg')
 # endregion
 
 # region [Utils]
