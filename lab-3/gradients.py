@@ -108,8 +108,8 @@ def plot_gradients(gradients: Dict[str, Callable[[Color], Color]]):
     (_, x2, *_) = axes.get_position().bounds
     figure.text(0, x2 + .05, name, va='center', ha='left', fontsize=10)
 
-  def create_gradient_image(gradient_fn: Callable[[Color], Color]) -> np.ndarray:
-    def assign_color(index: int, color: Color): gradient[:, index] = gradient_fn(color)
+  def create_gradient_image(gradient_fn: Callable[[float], Color]) -> np.ndarray:
+    def assign_color(index: int, value: float): gradient[:, index] = gradient_fn(value)
 
     gradient = np.zeros((2, 1024, 3))
     foreach(enumerate(np.linspace(0, 1, 1024)), assign_color)
@@ -130,7 +130,7 @@ def plot_gradients(gradients: Dict[str, Callable[[Color], Color]]):
   foreach(zip(axes, map(create_gradient_image, gradients.values())), plot_gradient)
   foreach(zip(axes, list(gradients)), assign_name)
 
-  figure.savefig('my-gradients.pdf')
+  figure.savefig('gradients.pdf')
 
 plot_gradients({
   'RGB_BW': RgbGradient.bw,
