@@ -3,10 +3,23 @@ from typing import *
 import numpy as np
 import json
 
+# region [Classes]
+class Texture(object):
+  def __init__(self, points: list):
+    self.points = np.array(points)
+    self.min = self.points.min(initial=1)
+    self.max = self.points.max(initial=0)
+    (self.width, self.height, *_) = self.points.shape
+# endregion
+
 # region [Typing]
 Color = Tuple[float, float, float]
 RgbColor = Color
 HsvColor = Color
+
+HeightMap = Texture
+ShadeMap = Texture
+TerrainMap = Texture
 # endregion
 
 # region [Utils]
@@ -26,18 +39,13 @@ def hsv2rgb(color: HsvColor) -> RgbColor:
 
 def foreach(iterable: Iterable, function: Callable):
   [*map(lambda x: function(*x), iterable)]
+
+def scale(value: float,
+          fn: Callable[[float], float],
+          range1: Tuple[float, float],
+          range2: Tuple[float, float]) -> float:
+  return np.interp(fn(np.interp(value, range1, (0, 1))), (0, 1), range2)
 # endregion
-
-class Texture(object):
-  def __init__(self, points: list):
-    self.points = np.array(points)
-    self.min = self.points.min(initial=1)
-    self.max = self.points.max(initial=0)
-    (self.width, self.height, *_) = self.points.shape
-
-HeightMap = Texture
-ShadeMap = Texture
-TerrainMap = Texture
 
 def load_map(filepath: str) -> Optional[HeightMap]:
   with open(filepath, 'r') as file:
@@ -59,19 +67,13 @@ def hillshade(height_map: HeightMap, azimuth: float, angle_altitude: float) -> S
   aspect = np.arctan2(-dx, dy)
   return Texture(shade_in())
 
-def scale(value: float,
-          fn: Callable[[float], float],
-          range1: Tuple[float, float],
-          range2: Tuple[float, float]) -> float:
-  return np.interp(fn(np.interp(value, range1, (0, 1))), (0, 1), range2)
-
-def terrain_gradient(height: float, shade: float) -> RgbColor:
-  return hsv2rgb((2 / 5 - np.interp(height, (0, 1), (0, 2 / 5)), 1, 0.5 + 0.5 * shade))
-
-def ease_in(x: float) -> float:
-  return 1 - np.power(-2 * x + 2, 1.76) / 2
-
 def gradient(height_map: HeightMap, shade_map: ShadeMap) -> TerrainMap:
+  def terrain_gradient(height: float, shade: float) -> RgbColor:
+    return hsv2rgb((2 / 5 - np.interp(height, (0, 1), (0, 2 / 5)), 1, 0.5 + 0.5 * shade))
+
+  def ease_in(x: float) -> float:
+    return 1 - np.power(-2 * x + 2, 1.76) / 2
+
   gradient: np.ndarray = np.zeros((*shade_map.points.shape, 3))
   for i in range(shade_map.height):
     for j in range(shade_map.width):
@@ -82,7 +84,7 @@ def gradient(height_map: HeightMap, shade_map: ShadeMap) -> TerrainMap:
         )
   return Texture(gradient)
 
-height_map = load_map('map.dem')
+height_map = load_map('resources/height_maps/map.dem')
 shade_map = hillshade(height_map, 70, 40)
 terrain_map = gradient(height_map, shade_map)
 
