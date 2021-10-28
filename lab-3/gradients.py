@@ -142,3 +142,10 @@ plot_gradients({
   'HSV_UNKNOWN': HsvGradient.unknown,
   'HSV_CUSTOM': HsvGradient.custom,
 })
+
+def hsv(value): return (0, 0, 1 - value)
+def rgb_gradient(value): return hsv2rgb(hsv(value))
+
+color = np.array(list(map(rgb_gradient, np.linspace(0, 1, 1024))))
+print(color.shape)
+plt.imsave('aa.png', color)

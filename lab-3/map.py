@@ -5,11 +5,13 @@ import json
 
 # region [Classes]
 class Texture(object):
-  def __init__(self, points: list):
+  def __init__(self, points: list, distance: float = None):
     self.points = np.array(points)
     self.min = self.points.min(initial=1)
     self.max = self.points.max(initial=0)
     (self.width, self.height, *_) = self.points.shape
+    self.distance = distance or 1
+
 # endregion
 
 # region [Typing]
@@ -52,7 +54,7 @@ def load_map(filepath: str) -> Optional[HeightMap]:
     (_, height, distance) = map(int, file.readline().split())
 
     points = np.array([np.array([*map(float, file.readline().split())]) for _ in range(height)])
-    return Texture(points / 255)
+    return Texture(points / 255, distance)
 
 def hillshade(height_map: HeightMap, azimuth: float, angle_altitude: float) -> ShadeMap:
   def shade_in():
@@ -60,16 +62,16 @@ def hillshade(height_map: HeightMap, azimuth: float, angle_altitude: float) -> S
            * np.sin(slope) \
            + np.cos(angle_altitude * np.pi / 180) \
            * np.cos(slope) \
-           * np.cos(((360.0 - azimuth) * np.pi / 180 - np.pi / 2.) - aspect)
+           * -np.cos((-azimuth * np.pi / 180) - aspect)
 
-  (dx, dy) = np.gradient(height_map.points)
+  (dx, dy) = np.gradient(height_map.points, height_map.distance / 100)
   slope = np.pi / 2 - np.arctan(np.sqrt(np.square(dx) + np.square(dy)))
   aspect = np.arctan2(-dx, dy)
   return Texture(shade_in())
 
 def gradient(height_map: HeightMap, shade_map: ShadeMap) -> TerrainMap:
   def terrain_gradient(height: float, shade: float) -> RgbColor:
-    return hsv2rgb((2 / 5 - np.interp(height, (0, 1), (0, 2 / 5)), 1, 0.5 + 0.5 * shade))
+    return hsv2rgb((5 / 9 - 5 / 9 * height, 1 - 0.8 * shade, 0.5 + 0.5 * shade))
 
   def ease_in(x: float) -> float:
     return 1 - np.power(-2 * x + 2, 1.76) / 2
@@ -85,7 +87,7 @@ def gradient(height_map: HeightMap, shade_map: ShadeMap) -> TerrainMap:
   return Texture(gradient)
 
 height_map = load_map('resources/height_maps/map.dem')
-shade_map = hillshade(height_map, 70, 40)
+shade_map = hillshade(height_map, 70, 60)
 terrain_map = gradient(height_map, shade_map)
 
 plt.imsave('maps/height.png', height_map.points, cmap='Greys')
