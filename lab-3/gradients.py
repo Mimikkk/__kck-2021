@@ -50,7 +50,7 @@ coloring: Dict[str, RgbColor] = {
 class RgbGradient(object):
   @staticmethod
   def bw(value) -> RgbColor:
-    return RgbGradient.gradient(value, list(map(coloring.__getitem__, ('white', 'black'))))
+    return RgbGradient.gradient(value, list(map(coloring.__getitem__, ('black', 'white'))))
 
   @staticmethod
   def gbr_partial(value) -> RgbColor:
@@ -89,11 +89,10 @@ class RgbGradient(object):
 class HsvGradient(object):
   @staticmethod
   def bw(value: float) -> HsvColor:
-    return hsv2rgb((0, 0, 1 - value))
+    return hsv2rgb((0, 0, value))
 
   @staticmethod
   def gbr(value: float) -> HsvColor:
-    min(value + 1/3, 1)
     return hsv2rgb((np.interp(value, (0, 1), (1 / 3, 1)), 1, 1))
 
   @staticmethod

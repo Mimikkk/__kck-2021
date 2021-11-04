@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 from typing import *
 import numpy as np
-import json
 
 # region [Classes]
 class Texture(object):
@@ -56,6 +55,7 @@ def load_map(filepath: str) -> Optional[HeightMap]:
     points = np.array([np.array([*map(float, file.readline().split())]) for _ in range(height)])
     return Texture(points / 255, distance)
 
+#Slightly modified source: https://www.neonscience.org/resources/learning-hub/tutorials/create-hillshade-py
 def hillshade(height_map: HeightMap, azimuth: float, angle_altitude: float) -> ShadeMap:
   def shade_in():
     return np.sin(angle_altitude * np.pi / 180) \
