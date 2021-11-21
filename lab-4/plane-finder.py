@@ -39,7 +39,7 @@ planenames = [f'samolot{i:02}' for i in range(21)]
 images = list(map(image_from, planenames))
 planes = dict(zip(planenames, images))
 # endregion
-
+# region [Image]
 def as_gray(image: Image) -> Image:
   return 1 - skic.rgb2gray(image)
 
@@ -47,6 +47,7 @@ def dilate(image: Image):
   dilation_seed = np.copy(image)
   dilation_seed[1:-1, 1:-1] = image.min()
   return reconstruction(dilation_seed, mask=image, method='dilation')
+# endregion
 
 def perform_magic(image: Image):
   def create_contoured_image(closed) -> Image:
