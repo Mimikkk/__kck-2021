@@ -1,2 +1,4 @@
 /.idea/
 /venv/
+/lab-5-card-detection/resources/datasets/playing-cards/
+/lab-5-card-detection/resources/datasets/playing-cards-labelized-dataset/
